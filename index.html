@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>DUCHUY Key System</title>
+
+<style>
+    body {
+        background-color: #000;
+        color: #00ffcc;
+        font-family: Consolas, monospace;
+        text-align: center;
+        margin: 20px;
+    }
+
+    h2, h3 {
+        text-shadow: 0 0 10px #00ffcc;
+    }
+
+    #key {
+        font-size: 18px;
+        margin: 20px;
+        color: #00ffcc;
+        text-shadow: 0 0 5px #00ffcc;
+        word-break: break-all;
+    }
+
+    input, select, button {
+        background: black;
+        border: 1px solid #00ffcc;
+        color: #00ffcc;
+        padding: 10px;
+        margin: 5px;
+        width: 90%;
+        max-width: 300px;
+        font-family: Consolas;
+        outline: none;
+    }
+
+    button {
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        background: #00ffcc;
+        color: black;
+        box-shadow: 0 0 10px #00ffcc;
+    }
+
+    #result {
+        margin-top: 15px;
+        font-weight: bold;
+        text-shadow: 0 0 5px currentColor;
+    }
+
+    hr {
+        border: 1px solid #00ffcc;
+        box-shadow: 0 0 5px #00ffcc;
+    }
+</style>
+</head>
+<body>
+
+<h2>⚡ DUCHUY KEY SYSTEM ⚡</h2>
+
+<select id="type">
+    <option value="1">1 DAY</option>
+    <option value="7">7 DAYS</option>
+    <option value="30">30 DAYS</option>
+</select>
+
+<br>
+
+<button onclick="generateKey()">[ GENERATE KEY ]</button>
+<button onclick="copyKey()">[ COPY KEY ]</button>
+
+<div id="key">>>> WAITING...</div>
+
+<hr>
+
+<h3>[ CHECK KEY ]</h3>
+
+<input type="text" id="inputKey" placeholder="ENTER KEY HERE">
+<br>
+<button onclick="checkKey()">[ VERIFY ]</button>
+
+<div id="result"></div>
+
+<script>
+function randomString(len) {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let result = "";
+    for (let i = 0; i < len; i++) {
+        result += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return result;
+}
+
+function generateKey() {
+    const days = parseInt(document.getElementById("type").value);
+    const now = Date.now();
+    const expire = now + days * 24 * 60 * 60 * 1000;
+    const timeCode = expire.toString(36).toUpperCase();
+
+    const key = `DUCHUY-${randomString(3)}-${randomString(3)}-${timeCode}`;
+    document.getElementById("key").innerText = ">>> " + key;
+}
+
+function copyKey() {
+    const key = document.getElementById("key").innerText.replace(">>> ", "");
+    if (key === "WAITING...") {
+        alert("NO KEY!");
+        return;
+    }
+    navigator.clipboard.writeText(key).then(() => {
+        alert("COPIED!");
+    });
+}
+
+function checkKey() {
+    const key = document.getElementById("inputKey").value.trim();
+    const result = document.getElementById("result");
+
+    if (!key.startsWith("DUCHUY-")) {
+        result.innerText = "❌ INVALID KEY";
+        result.style.color = "red";
+        return;
+    }
+
+    const parts = key.split("-");
+    if (parts.length !== 4) {
+        result.innerText = "❌ WRONG FORMAT";
+        result.style.color = "red";
+        return;
+    }
+
+    try {
+        const expire = parseInt(parts[3], 36);
+        const now = Date.now();
+
+        if (now > expire) {
+            result.innerText = "⛔ EXPIRED";
+            result.style.color = "orange";
+        } else {
+            const daysLeft = Math.floor((expire - now) / (1000 * 60 * 60 * 24));
+            result.innerText = `✅ ACTIVE (${daysLeft} DAYS LEFT)`;
+            result.style.color = "#00ffcc";
+        }
+    } catch {
+        result.innerText = "❌ ERROR";
+        result.style.color = "red";
+    }
+}
+</script>
+
+</body>
+</html>
